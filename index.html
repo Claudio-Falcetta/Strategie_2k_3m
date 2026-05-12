@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Muscle Café OS</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0e0e0e;
+  --bg2: #161616;
+  --bg3: #1e1e1e;
+  --surface: #242424;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --text: #f0ede8;
+  --muted: #888;
+  --muted2: #555;
+  --accent: #c8f060;
+  --accent2: #f0c040;
+  --accent3: #60d0c8;
+  --red: #f06060;
+  --purple: #c060f0;
+  --font-serif: 'DM Serif Display', Georgia, serif;
+  --font-sans: 'Instrument Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-sans);font-size:14px;line-height:1.6;min-height:100vh;display:flex;}
+
+/* SIDEBAR */
+.sidebar{width:220px;min-height:100vh;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:100;}
+.sidebar-brand{padding:24px 20px 20px;border-bottom:1px solid var(--border);}
+.brand-logo{font-family:var(--font-serif);font-size:18px;color:var(--accent);letter-spacing:-0.02em;}
+.brand-sub{font-size:10px;color:var(--muted);font-family:var(--font-mono);margin-top:2px;text-transform:uppercase;letter-spacing:0.1em;}
+.week-indicator{margin:16px 20px 0;background:var(--surface);border-radius:var(--radius-sm);padding:10px 12px;}
+.week-label{font-size:10px;font-family:var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;}
+.week-val{font-size:13px;font-weight:600;color:var(--accent);margin-top:2px;}
+.nav{flex:1;padding:12px 0;overflow-y:auto;}
+.nav-group{margin-bottom:4px;}
+.nav-group-label{font-size:10px;font-family:var(--font-mono);color:var(--muted2);text-transform:uppercase;letter-spacing:0.1em;padding:8px 20px 4px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 20px;cursor:pointer;color:var(--muted);font-size:13px;font-weight:500;border-left:2px solid transparent;transition:all 0.15s;text-decoration:none;}
+.nav-item:hover{color:var(--text);background:var(--surface);}
+.nav-item.active{color:var(--accent);border-left-color:var(--accent);background:rgba(200,240,96,0.05);}
+.nav-item .dot{width:6px;height:6px;border-radius:50%;background:var(--border2);flex-shrink:0;}
+.nav-item.active .dot{background:var(--accent);}
+.sidebar-bottom{padding:16px 20px;border-top:1px solid var(--border);}
+.week-nav{display:flex;gap:8px;align-items:center;}
+.week-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:5px 10px;cursor:pointer;font-size:12px;font-family:var(--font-mono);transition:all 0.15s;}
+.week-btn:hover{border-color:var(--border2);color:var(--text);}
+.week-display{flex:1;text-align:center;font-size:11px;font-family:var(--font-mono);color:var(--muted);}
+
+/* MAIN */
+.main{margin-left:220px;flex:1;min-height:100vh;}
+.page{display:none;padding:40px 48px;max-width:900px;}
+.page.active{display:block;}
+
+/* PAGE HEADER */
+.page-header{margin-bottom:36px;}
+.page-eyebrow{font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:0.15em;color:var(--muted);margin-bottom:8px;}
+.page-title{font-family:var(--font-serif);font-size:36px;color:var(--text);line-height:1.1;margin-bottom:8px;}
+.page-desc{font-size:13px;color:var(--muted);max-width:560px;line-height:1.7;}
+
+/* PROGRESS BAR */
+.protocol-progress{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:28px;display:flex;align-items:center;gap:16px;}
+.pp-bar-wrap{flex:1;background:var(--bg);border-radius:99px;height:6px;overflow:hidden;}
+.pp-bar{height:100%;border-radius:99px;background:var(--accent);transition:width 0.4s ease;}
+.pp-label{font-family:var(--font-mono);font-size:12px;color:var(--accent);min-width:44px;text-align:right;}
+.pp-title{font-size:13px;font-weight:500;color:var(--muted);min-width:120px;}
+
+/* CHECKLIST BLOCKS */
+.checklist-block{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;overflow:hidden;}
+.cb-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
+.cb-header:hover{background:var(--surface);}
+.cb-title-row{display:flex;align-items:center;gap:10px;}
+.cb-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.cb-title{font-size:14px;font-weight:600;}
+.cb-badge{font-family:var(--font-mono);font-size:10px;padding:3px 8px;border-radius:99px;border:1px solid var(--border2);color:var(--muted);}
+.cb-badge.done{border-color:var(--accent);color:var(--accent);background:rgba(200,240,96,0.08);}
+.cb-body{padding:16px 20px;}
+.cb-body.collapsed{display:none;}
+.check-item{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+.check-item:last-child{border-bottom:none;}
+.check-item input[type=checkbox]{width:16px;height:16px;border-radius:4px;appearance:none;-webkit-appearance:none;border:1.5px solid var(--border2);cursor:pointer;flex-shrink:0;margin-top:2px;position:relative;transition:all 0.15s;}
+.check-item input[type=checkbox]:checked{background:var(--accent);border-color:var(--accent);}
+.check-item input[type=checkbox]:checked::after{content:'';position:absolute;left:3px;top:1px;width:6px;height:9px;border:2px solid #0e0e0e;border-top:none;border-left:none;transform:rotate(45deg);}
+.check-label{flex:1;}
+.check-label strong{display:block;font-size:13px;font-weight:500;color:var(--text);}
+.check-label span{font-size:11px;color:var(--muted);line-height:1.5;}
+.check-item.checked .check-label strong{color:var(--muted);text-decoration:line-through;}
+.note-field{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text);font-family:var(--font-sans);font-size:12px;resize:vertical;min-height:60px;margin-top:8px;outline:none;}
+.note-field:focus{border-color:var(--border2);}
+.note-field::placeholder{color:var(--muted2);}
+
+/* STATS PAGE */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:28px;}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;}
+.stat-card .sc-label{font-size:11px;font-family:var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;}
+.stat-card input[type=number],.stat-card input[type=text]{width:100%;background:transparent;border:none;color:var(--accent);font-family:var(--font-mono);font-size:22px;font-weight:500;outline:none;padding:0;}
+.stat-card input::placeholder{color:var(--muted2);}
+.stat-card .sc-sub{font-size:10px;color:var(--muted2);margin-top:4px;}
+.stat-section-title{font-size:12px;font-family:var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin:24px 0 12px;display:flex;align-items:center;gap:8px;}
+.stat-section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* HISTORY PAGE */
+.history-week{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;}
+.hw-header{padding:14px 20px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+.hw-header:hover{background:var(--surface);}
+.hw-title{font-family:var(--font-mono);font-size:13px;color:var(--text);}
+.hw-score{font-size:12px;font-family:var(--font-mono);}
+.hw-body{padding:16px 20px;border-top:1px solid var(--border);display:none;}
+.hw-body.open{display:block;}
+.consistency-chart{display:flex;gap:4px;align-items:flex-end;height:60px;margin-top:8px;}
+.cc-bar{flex:1;border-radius:3px 3px 0 0;min-height:4px;background:var(--surface);transition:background 0.2s;}
+.cc-bar.done{background:var(--accent);}
+.cc-bar.partial{background:var(--accent2);}
+.cc-label{font-size:9px;font-family:var(--font-mono);color:var(--muted2);text-align:center;margin-top:4px;}
+
+/* RESOURCES PAGE */
+.resource-item{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;padding:16px 20px;display:flex;align-items:flex-start;gap:14px;}
+.ri-check{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;cursor:pointer;transition:all 0.15s;}
+.ri-check.done{background:var(--accent);border-color:var(--accent);}
+.ri-check.done::after{content:'✓';font-size:11px;color:#0e0e0e;font-weight:700;}
+.ri-body{flex:1;}
+.ri-title{font-size:14px;font-weight:600;margin-bottom:3px;}
+.ri-desc{font-size:12px;color:var(--muted);line-height:1.6;}
+.ri-tag{display:inline-block;font-size:10px;font-family:var(--font-mono);padding:2px 7px;border-radius:4px;margin-top:6px;border:1px solid var(--border);}
+.ri-tag.urgent{border-color:var(--accent2);color:var(--accent2);}
+.ri-tag.important{border-color:var(--accent3);color:var(--accent3);}
+.ri-tag.bonus{border-color:var(--purple);color:var(--purple);}
+
+/* COMMUNITY PAGE */
+.course-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;overflow:hidden;}
+.course-header{padding:16px 20px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border);}
+.course-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.course-meta{flex:1;}
+.course-name{font-size:15px;font-weight:600;}
+.course-status{font-size:11px;font-family:var(--font-mono);margin-top:2px;}
+.course-body{padding:16px 20px;}
+.course-task{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.course-task:last-child{border-bottom:none;}
+.course-task input[type=checkbox]{width:15px;height:15px;border-radius:3px;appearance:none;-webkit-appearance:none;border:1.5px solid var(--border2);cursor:pointer;flex-shrink:0;position:relative;transition:all 0.15s;}
+.course-task input[type=checkbox]:checked{background:var(--accent3);border-color:var(--accent3);}
+.course-task input[type=checkbox]:checked::after{content:'';position:absolute;left:2px;top:0px;width:7px;height:9px;border:2px solid #0e0e0e;border-top:none;border-left:none;transform:rotate(45deg);}
+.course-task label{font-size:13px;color:var(--text);cursor:pointer;}
+
+/* DASHBOARD */
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;}
+.dash-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;}
+.dash-card-title{font-size:11px;font-family:var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px;}
+.kpi-row{display:flex;align-items:baseline;gap:8px;margin-bottom:8px;}
+.kpi-val{font-family:var(--font-mono);font-size:28px;font-weight:500;color:var(--text);}
+.kpi-unit{font-size:12px;color:var(--muted);}
+.kpi-delta{font-size:11px;font-family:var(--font-mono);}
+.kpi-delta.up{color:var(--accent);}
+.kpi-delta.down{color:var(--red);}
+.mini-bars{display:flex;gap:3px;align-items:flex-end;height:40px;margin-top:8px;}
+.mb-bar{flex:1;background:var(--surface);border-radius:2px 2px 0 0;min-height:4px;}
+.proto-compliance{display:flex;flex-direction:column;gap:8px;}
+.pc-row{display:flex;align-items:center;gap:10px;}
+.pc-label{font-size:12px;color:var(--muted);min-width:110px;}
+.pc-bar-wrap{flex:1;background:var(--bg);border-radius:99px;height:5px;}
+.pc-fill{height:100%;border-radius:99px;background:var(--accent);transition:width 0.5s ease;}
+.pc-pct{font-size:11px;font-family:var(--font-mono);color:var(--accent);min-width:32px;text-align:right;}
+
+/* SAVE BUTTON */
+.save-btn{position:fixed;bottom:28px;right:28px;background:var(--accent);color:#0e0e0e;font-family:var(--font-sans);font-size:13px;font-weight:600;border:none;border-radius:99px;padding:11px 22px;cursor:pointer;box-shadow:0 4px 24px rgba(200,240,96,0.3);transition:all 0.2s;z-index:200;}
+.save-btn:hover{transform:translateY(-2px);box-shadow:0 6px 28px rgba(200,240,96,0.4);}
+.save-btn:active{transform:scale(0.97);}
+.save-notice{position:fixed;bottom:28px;right:28px;background:var(--surface);border:1px solid var(--border);color:var(--accent);font-size:12px;font-family:var(--font-mono);border-radius:99px;padding:10px 18px;z-index:200;opacity:0;pointer-events:none;transition:opacity 0.3s;}
+
+/* SECTION DIVIDERS */
+.section-sep{height:1px;background:var(--border);margin:28px 0;}
+.section-label{font-size:11px;font-family:var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* TUNNEL TAGS */
+.tunnel-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:12px;}
+.tc-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.tc-step{width:22px;height:22px;border-radius:50%;font-size:11px;font-family:var(--font-mono);font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.tc-title{font-size:13px;font-weight:600;}
+.tc-kpi{font-size:11px;font-family:var(--font-mono);color:var(--muted);margin-left:auto;}
+
+/* RESPONSIVE NOTE */
+@media(max-width:768px){
+  .sidebar{transform:translateX(-220px);}
+  .main{margin-left:0;}
+  .page{padding:24px 20px;}
+  .dash-grid{grid-template-columns:1fr;}
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+
+/* ANIMATIONS */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.page.active{animation:fadeIn 0.2s ease;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-logo">Muscle Café</div>
+    <div class="brand-sub">Creator OS</div>
+  </div>
+  <div class="week-indicator">
+    <div class="week-label">Semaine active</div>
+    <div class="week-val" id="current-week-label">S1 — 2025</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-group">
+      <div class="nav-group-label">Vue d'ensemble</div>
+      <a class="nav-item active" data-page="dashboard"><span class="dot"></span>Dashboard</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Protocoles hebdo</div>
+      <a class="nav-item" data-page="idees"><span class="dot"></span>Recherche d'idées</a>
+      <a class="nav-item" data-page="script"><span class="dot"></span>Script &amp; structure</a>
+      <a class="nav-item" data-page="tournage"><span class="dot"></span>Tournage</a>
+      <a class="nav-item" data-page="montage"><span class="dot"></span>Montage &amp; pub.</a>
+      <a class="nav-item" data-page="email"><span class="dot"></span>Email &amp; communauté</a>
+      <a class="nav-item" data-page="analyse"><span class="dot"></span>Analyse &amp; optim.</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Système</div>
+      <a class="nav-item" data-page="ressources"><span class="dot"></span>Ressources à créer</a>
+      <a class="nav-item" data-page="communaute"><span class="dot"></span>Contenu VIP</a>
+      <a class="nav-item" data-page="stats"><span class="dot"></span>Stats de la semaine</a>
+      <a class="nav-item" data-page="historique"><span class="dot"></span>Historique</a>
+    </div>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="week-nav">
+      <button class="week-btn" id="prev-week">←</button>
+      <span class="week-display" id="week-display">Semaine courante</span>
+      <button class="week-btn" id="next-week">→</button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div class="page-header">
+    <div class="page-eyebrow">Vue d'ensemble</div>
+    <div class="page-title">Dashboard</div>
+    <div class="page-desc">Suivi global de ta progression vers les 2 000.- / mois.</div>
+  </div>
+  <div class="dash-grid">
+    <div class="dash-card">
+      <div class="dash-card-title">Protocoles cette semaine</div>
+      <div class="kpi-row"><span class="kpi-val" id="dash-protocols">0/6</span><span class="kpi-unit">complétés</span></div>
+      <div class="proto-compliance" id="dash-protocol-bars"></div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-card-title">Revenu mensuel actuel</div>
+      <div class="kpi-row"><span class="kpi-val" id="dash-revenue">—</span><span class="kpi-unit">CHF</span><span class="kpi-delta up" id="dash-rev-delta"></span></div>
+      <div class="dash-card-title" style="margin-top:16px;">Abonnés VIP</div>
+      <div class="kpi-row"><span class="kpi-val" id="dash-vip">—</span><span class="kpi-unit">/ 55 objectif</span></div>
+      <div class="pp-bar-wrap" style="margin-top:4px;"><div class="pp-bar" id="dash-vip-bar" style="width:0%;background:var(--accent3);"></div></div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-card-title">Vues / mois</div>
+      <div class="kpi-row"><span class="kpi-val" id="dash-views">—</span><span class="kpi-unit">/ 25 000 objectif</span></div>
+      <div class="pp-bar-wrap" style="margin-top:4px;"><div class="pp-bar" id="dash-views-bar" style="width:0%;"></div></div>
+      <div class="dash-card-title" style="margin-top:16px;">Liste mail</div>
+      <div class="kpi-row"><span class="kpi-val" id="dash-mails">—</span><span class="kpi-unit">/ 500 objectif</span></div>
+      <div class="pp-bar-wrap" style="margin-top:4px;"><div class="pp-bar" id="dash-mails-bar" style="width:0%;background:var(--accent2);"></div></div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-card-title">Régularité (8 dernières semaines)</div>
+      <div class="mini-bars" id="dash-consistency"></div>
+    </div>
+  </div>
+  <div class="section-label">Tunnel de conversion</div>
+  <div class="tunnel-card">
+    <div class="tc-head"><div class="tc-step" style="background:rgba(200,240,96,0.15);color:var(--accent);">1</div><span class="tc-title">Vues → Abonnés</span><span class="tc-kpi" id="tc1">—%</span></div>
+    <div class="pp-bar-wrap"><div class="pp-bar" id="tc1-bar" style="width:0%;height:4px;"></div></div>
+  </div>
+  <div class="tunnel-card">
+    <div class="tc-head"><div class="tc-step" style="background:rgba(240,192,64,0.15);color:var(--accent2);">2</div><span class="tc-title">Vues → Leads mail</span><span class="tc-kpi" id="tc2">—%</span></div>
+    <div class="pp-bar-wrap"><div class="pp-bar" id="tc2-bar" style="width:0%;height:4px;background:var(--accent2);"></div></div>
+  </div>
+  <div class="tunnel-card">
+    <div class="tc-head"><div class="tc-step" style="background:rgba(96,208,200,0.15);color:var(--accent3);">3</div><span class="tc-title">Leads → Abonnés VIP</span><span class="tc-kpi" id="tc3">—%</span></div>
+    <div class="pp-bar-wrap"><div class="pp-bar" id="tc3-bar" style="width:0%;height:4px;background:var(--accent3);"></div></div>
+  </div>
+</div>
+
+<!-- IDÉES -->
+<div class="page" id="page-idees">
+  <div class="page-header">
+    <div class="page-eyebrow">Lundi — Bloc 1</div>
+    <div class="page-title">Recherche d'idées</div>
+    <div class="page-desc">Génère 5 à 10 idées solides avant de commencer la semaine. Coche chaque étape du protocole.</div>
+  </div>
+  <div class="protocol-progress">
+    <span class="pp-title">Progression</span>
+    <div class="pp-bar-wrap"><div class="pp-bar" id="prog-idees" style="width:0%"></div></div>
+    <span class="pp-label" id="prog-idees-label">0%</span>
+  </div>
+  <div class="checklist-block">
+    <div class="cb-header" onclick="toggleBlock('cb-comments')">
+      <div class="cb-title-row"><div class="cb-icon" style="background:rgba(200,240,96,0.1);">💬</div><span class="cb-title" style="color:var(--accent)">Commentaires & communauté</span></div>
+      <span class="cb-badge" id="badge-cb-comments">0/4</span>
+    </div>
+    <div class="cb-body" id="cb-comments">
+      <div class="check-item"><input type="checkbox" id="i1"><div class="check-label"><strong>Relire les 20 derniers commentaires</strong><span>Sur ta chaîne YouTube. Surligne les questions répétées ou frustrations.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="i2"><div class="check-label"><strong>Lister les 3 questions les plus fréquentes</strong><span>Chacune = une idée de vidéo potentielle.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="i3"><div class="check-label"><strong>Consulter les membres VIP</strong><span>Vérifier si des fils de discussion ont soulevé des problématiques non traitées.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="i4"><div class="check-label"><strong>Lire les réponses au dernier mail "réponds-moi en 1 phrase"</strong><span>Si envoyé dans les 6 dernières semaines.</span></div></div>
+      <textarea class="note-field" placeholder="Notes & idées issues des commentaires…"></textarea>
+    </div>
+  </div>
+  <div class="checklist-block">
+    <div class="cb-header" onclick="toggleBlock('cb-seo')">
+      <div class="cb-title-row"><div class="cb-icon" style="background:rgba(96,208,200,0.1);">🔍</div><span class="cb-title" style="color:var(--accent3)">Recherche SEO YouTube</span></div>
+      <span class="cb-badge" id="badge-cb-seo">0/4</span>
+    </div>
+    <div class="cb-body collapsed" id="cb-seo">
+      <div class="check-item"><input type="checkbox" id="i5"><div class="check-label"><strong>VidIQ / TubeBuddy — termes niche cheveux</strong><span>"perte de cheveux musculation", "DHT sport", "alopécie homme"…</span></div></div>
+      <div class="check-item"><input type="checkbox" id="i6"><div class="check-label"><strong>VidIQ / TubeBuddy — termes niche fitness masculin</strong><span>"testostérone naturellement", "routine musculation débutant", "récupération musculaire"…</span></div></div>
+      <div class="check-item"><input type="checkbox" id="i7"><div class="check-label"><strong>VidIQ / TubeBuddy — termes santé sexuelle & mentale</strong><span>"santé sexuelle homme", "performance masculine", "bien-être mental masculin"…</span></div></div>
+      <div class="check-item"><input type="checkbox" id="i8"><div class="check-label"><strong>Identifier 2-3 mots-clés à fort ratio recherche/compétition</strong><span>Score ≥ 60 sur VidIQ ou équivalent.</span></div></div>
+      <textarea class="note-field" placeholder="Mots-clés retenus avec leurs scores…"></textarea>
+    </div>
+  </div>
+  <div class="checklist-block">
+    <div class="cb-header" onclick="toggleBlock('cb-concurrents')">
+      <div class="cb-title-row"><div class="cb-icon" style="background:rgba(240,192,64,0.1);">📡</div><span class="cb-title" style="color:var(--accent2)">Veille concurrentielle</span></div>
+      <span class="cb-badge" id="badge-cb-concurrents">0/3</span>
+    </div>
+    <div class="cb-body collapsed" id="cb-concurrents">
+      <div class="check-item"><input type="checkbox" id="i9"><div class="check-label"><strong>Identifier les vidéos à +50k vues chez 5 créateurs niche</strong><span>Niche hair + niche fitness + niche santé masculine.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="i10"><div class="check-label"><strong>Analyser les titres et miniatures des tops performers</strong><span>Qu'est-ce qui génère le clic ? Quel angle ? Quelle émotion ?</span></div></div>
+      <div class="check-item"><input type="checkbox" id="i11"><div class="check-label"><strong>Sélectionner 1-2 sujets validés à réinterpréter avec ton angle</strong><span>Ton positionnement unique : l'intersection hair + physique + optimisation masculine.</span></div></div>
+      <textarea class="note-field" placeholder="Sujets retenus + angle différenciant…"></textarea>
+    </div>
+  </div>
+  <div class="checklist-block">
+    <div class="cb-header" onclick="toggleBlock('cb-selection')">
+      <div class="cb-title-row"><div class="cb-icon" style="background:rgba(192,96,240,0.1);">✅</div><span class="cb-title" style="color:var(--purple)">Sélection finale semaine</span></div>
+      <span class="cb-badge" id="badge-cb-selection">0/3</span>
+    </div>
+    <div class="cb-body collapsed" id="cb-selection">
+      <div class="check-item"><input type="checkbox" id="i12"><div class="check-label"><strong>Choisir le sujet de la vidéo longue</strong><span>1 sujet SEO OU 1 sujet communauté à fort engagement potentiel.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="i13"><div class="check-label"><strong>Définir l'angle et le hook en 1 phrase</strong><span>Ex : "Pourquoi les bodybuilders perdent leurs cheveux — et comment l'éviter"</span></div></div>
+      <div class="check-item"><input type="checkbox" id="i14"><div class="check-label"><strong>Préparer 3 idées de shorts dérivables de la vidéo longue</strong><span>Opinion tranchée / tip rapide / coulisses / stat choc.</span></div></div>
+      <textarea class="note-field" placeholder="Titre provisoire vidéo longue + 3 idées de shorts…"></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- SCRIPT -->
+<div class="page" id="page-script">
+  <div class="page-header">
+    <div class="page-eyebrow">Lundi — Bloc 2</div>
+    <div class="page-title">Script &amp; structure</div>
+    <div class="page-desc">Construis la charpente de ta vidéo avant de tourner. Un bon script = moins de prises, meilleure rétention.</div>
+  </div>
+  <div class="protocol-progress">
+    <span class="pp-title">Progression</span>
+    <div class="pp-bar-wrap"><div class="pp-bar" id="prog-script" style="width:0%"></div></div>
+    <span class="pp-label" id="prog-script-label">0%</span>
+  </div>
+  <div class="checklist-block">
+    <div class="cb-header" onclick="toggleBlock('cb-hook')">
+      <div class="cb-title-row"><div class="cb-icon" style="background:rgba(200,240,96,0.1);">⚡</div><span class="cb-title" style="color:var(--accent)">Hook (0-5 sec)</span></div>
+      <span class="cb-badge" id="badge-cb-hook">0/3</span>
+    </div>
+    <div class="cb-body" id="cb-hook">
+      <div class="check-item"><input type="checkbox" id="s1"><div class="check-label"><strong>Rédiger 3 versions du hook</strong><span>1 statistique choc / 1 question directe / 1 affirmation contre-intuitive.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="s2"><div class="check-label"><strong>Sélectionner le meilleur + tester à voix haute</strong><span>Est-ce que ça donne envie de continuer à regarder en 5 sec ?</span></div></div>
+      <div class="check-item"><input type="checkbox" id="s3"><div class="check-label"><strong>Définir la promesse explicite de la vidéo</strong><span>"Dans cette vidéo tu vas apprendre…" — dite clairement dans les 30 premières secondes.</span></div></div>
+      <textarea class="note-field" placeholder="Hook retenu + promesse formulée…"></textarea>
+    </div>
+  </div>
+  <div class="checklist-block">
+    <div class="cb-header" onclick="toggleBlock('cb-structure')">
+      <div class="cb-title-row"><div class="cb-icon" style="background:rgba(96,208,200,0.1);">🏗️</div><span class="cb-title" style="color:var(--accent3)">Structure narrative</span></div>
+      <span class="cb-badge" id="badge-cb-structure">0/4</span>
+    </div>
+    <div class="cb-body collapsed" id="cb-structure">
+      <div class="check-item"><input type="checkbox" id="s4"><div class="check-label"><strong>Bloc conflit/problème</strong><span>Amplifier le problème que l'audience vit. Elle doit se reconnaître.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="s5"><div class="check-label"><strong>Bloc révélation/contenu de valeur</strong><span>3-5 points clés structurés. Le cœur de la vidéo. Chaque point = une vraie info actionnnable.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="s6"><div class="check-label"><strong>Placement naturel Hairdex (si vidéo sponsorisée)</strong><span>Intégration narrative : "L'outil qui m'a aidé à suivre ça…". Pas avant la 3e minute.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="s7"><div class="check-label"><strong>CTA double : abonnement chaîne + lead magnet / VIP</strong><span>Un CTA à mi-vidéo (lead magnet), un CTA en fin (abonnement + VIP). Maximum 30 sec chacun.</span></div></div>
+      <textarea class="note-field" placeholder="Plan de la vidéo en bullet points…"></textarea>
+    </div>
+  </div>
+  <div class="checklist-block">
+    <div class="cb-header" onclick="toggleBlock('cb-shorts-script')">
+      <div class="cb-title-row"><div class="cb-icon" style="background:rgba(240,192,64,0.1);">📱</div><span class="cb-title" style="color:var(--accent2)">Shorts — talking points</span></div>
+      <span class="cb-badge" id="badge-cb-shorts-script">0/3</span>
+    </div>
+    <div class="cb-body collapsed" id="cb-shorts-script">
+      <div class="check-item"><input type="checkbox" id="s8"><div class="check-label"><strong>Short 1 — Opinion tranchée ou stat choc</strong><span>30-45 sec. Hook immédiat, pas d'intro. Format : "La plupart des gens pensent X. C'est faux. Voici pourquoi."</span></div></div>
+      <div class="check-item"><input type="checkbox" id="s9"><div class="check-label"><strong>Short 2 — Tip actionnable</strong><span>45-60 sec. "1 tip que tu peux appliquer ce soir pour…"</span></div></div>
+      <div class="check-item"><input type="checkbox" id="s10"><div class="check-label"><strong>Short 3 — Teaser ou coulisses</strong><span>30 sec. Montrer l'envers du décor, une anecdote, une preview de la vidéo longue.</span></div></div>
+      <textarea class="note-field" placeholder="Notes pour chaque short…"></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- TOURNAGE -->
+<div class="page" id="page-tournage">
+  <div class="page-header">
+    <div class="page-eyebrow">Mardi — Blocs 3 &amp; 4</div>
+    <div class="page-title">Tournage</div>
+    <div class="page-desc">Session de tournage batch : vidéo longue le matin, shorts l'après-midi. Même setup, même tenue si possible.</div>
+  </div>
+  <div class="protocol-progress">
+    <span class="pp-title">Progression</span>
+    <div class="pp-bar-wrap"><div class="pp-bar" id="prog-tournage" style="width:0%"></div></div>
+    <span class="pp-label" id="prog-tournage-label">0%</span>
+  </div>
+  <div class="checklist-block">
+    <div class="cb-header" onclick="toggleBlock('cb-setup')">
+      <div class="cb-title-row"><div class="cb-icon" style="background:rgba(200,240,96,0.1);">🎬</div><span class="cb-title" style="color:var(--accent)">Setup &amp; préparation</span></div>
+      <span class="cb-badge" id="badge-cb-setup">0/4</span>
+    </div>
+    <div class="cb-body" id="cb-setup">
+      <div class="check-item"><input type="checkbox" id="t1"><div class="check-label"><strong>Vérifier cadrage + lumière</strong><span>Lumière naturelle ou ring light correctement positionnée. Fond propre ou arrière-plan cohérent avec la marque.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="t2"><div class="check-label"><strong>Vérifier qualité audio</strong><span>Micro branché et testé. Pas de bruit de fond. Enregistrement test de 10 sec à écouter avant.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="t3"><div class="check-label"><strong>Script ou notes à portée de regard</strong><span>Pas besoin de lire mot à mot — les bullet points suffisent pour rester naturel.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="t4"><div class="check-label"><strong>Téléphone / batterie chargés</strong><span>Stockage suffisant pour la session complète.</span></div></div>
+    </div>
+  </div>
+  <div class="checklist-block">
+    <div class="cb-header" onclick="toggleBlock('cb-tournage-long')">
+      <div class="cb-title-row"><div class="cb-icon" style="background:rgba(96,208,200,0.1);">🎥</div><span class="cb-title" style="color:var(--accent3)">Vidéo longue</span></div>
+      <span class="cb-badge" id="badge-cb-tournage-long">0/4</span>
+    </div>
+    <div class="cb-body collapsed" id="cb-tournage-long">
+      <div class="check-item"><input type="checkbox" id="t5"><div class="check-label"><strong>Tourner le hook en premier (2-3 takes max)</strong><span>Le hook doit être punchy. Si après 3 takes ce n'est pas satisfaisant, reformuler et recommencer.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="t6"><div class="check-label"><strong>Tourner le corps principal</strong><span>Chaque section en 1-2 takes. Clapser mentalement entre les sections pour faciliter le montage.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="t7"><div class="check-label"><strong>Tourner les CTA (mid-vidéo + fin)</strong><span>2 versions du CTA communauté VIP à avoir en boîte.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="t8"><div class="check-label"><strong>Visionner 30 sec du rushes pour valider qualité</strong><span>Son, cadrage, flou — mieux vaut découvrir au tournage qu'au montage.</span></div></div>
+    </div>
+  </div>
+  <div class="checklist-block">
+    <div class="cb-header" onclick="toggleBlock('cb-tournage-shorts')">
+      <div class="cb-title-row"><div class="cb-icon" style="background:rgba(240,192,64,0.1);">📱</div><span class="cb-title" style="color:var(--accent2)">Session shorts (batch)</span></div>
+      <span class="cb-badge" id="badge-cb-tournage-shorts">0/3</span>
+    </div>
+    <div class="cb-body collapsed" id="cb-tournage-shorts">
+      <div class="check-item"><input type="checkbox" id="t9"><div class="check-label"><strong>Filmer les 3 shorts en session enchaînée</strong><span>Format vertical 9:16. Pas de pause, même tenue, optimise l'énergie et la cohérence.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="t10"><div class="check-label"><strong>Hook verbal dans les 2 premières secondes pour chaque short</strong><span>Pas d'intro, pas de "bonjour" — commencer directement par l'accroche.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="t11"><div class="check-label"><strong>Mentionner la chaîne / communauté dans au moins 1 short sur 3</strong><span>CTA doux et naturel. Ex : "plus de détails dans ma vidéo de cette semaine".</span></div></div>
+      <textarea class="note-field" placeholder="Notes de tournage, prises à garder…"></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- MONTAGE -->
+<div class="page" id="page-montage">
+  <div class="page-header">
+    <div class="page-eyebrow">Mercredi + Jeudi matin — Blocs 5, 6 &amp; 7</div>
+    <div class="page-title">Montage &amp; publication</div>
+    <div class="page-desc">Montage de la vidéo longue, des shorts, création des miniatures et publication optimisée.</div>
+  </div>
+  <div class="protocol-progress">
+    <span class="pp-title">Progression</span>
+    <div class="pp-bar-wrap"><div class="pp-bar" id="prog-montage" style="width:0%"></div></div>
+    <span class="pp-label" id="prog-montage-label">0%</span>
+  </div>
+  <div class="checklist-block">
+    <div class="cb-header" onclick="toggleBlock('cb-montage-long')">
+      <div class="cb-title-row"><div class="cb-icon" style="background:rgba(200,240,96,0.1);">✂️</div><span class="cb-title" style="color:var(--accent)">Montage vidéo longue</span></div>
+      <span class="cb-badge" id="badge-cb-montage-long">0/5</span>
+    </div>
+    <div class="cb-body" id="cb-montage-long">
+      <div class="check-item"><input type="checkbox" id="m1"><div class="check-label"><strong>Sélectionner les meilleures prises</strong><span>Assembler le premier cut brut. Durée cible : 8-15 min.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="m2"><div class="check-label"><strong>Couper les blancs et hésitations</strong><span>Rythme soutenu. Le viewer ne doit jamais s'ennuyer.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="m3"><div class="check-label"><strong>Ajouter sous-titres / incrustations clés</strong><span>Au minimum : le titre du sujet, les points principaux, les CTAs.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="m4"><div class="check-label"><strong>Ajouter musique de fond calibrée</strong><span>Volume &lt; 20% de la voix. Cohérente avec l'ambiance de la vidéo.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="m5"><div class="check-label"><strong>Export fichier final + vérification qualité</strong><span>1080p minimum. Visionner les 30 premières secondes et les 30 dernières avant de publier.</span></div></div>
+    </div>
+  </div>
+  <div class="checklist-block">
+    <div class="cb-header" onclick="toggleBlock('cb-miniature')">
+      <div class="cb-title-row"><div class="cb-icon" style="background:rgba(240,192,64,0.1);">🖼️</div><span class="cb-title" style="color:var(--accent2)">Miniature &amp; titre</span></div>
+      <span class="cb-badge" id="badge-cb-miniature">0/4</span>
+    </div>
+    <div class="cb-body collapsed" id="cb-miniature">
+      <div class="check-item"><input type="checkbox" id="m6"><div class="check-label"><strong>Créer la miniature sur le template Canva/Figma</strong><span>Visage expressif + texte &lt; 5 mots + couleur dominante cohérente avec ta marque.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="m7"><div class="check-label"><strong>Tester 2 variantes de titre (A/B)</strong><span>Option A : SEO prioritaire. Option B : curiosité / émotion prioritaire.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="m8"><div class="check-label"><strong>Vérifier lisibilité miniature en format 120x68px</strong><span>C'est la taille d'affichage sur mobile. Si c'est illisible à cette taille, retravailler.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="m9"><div class="check-label"><strong>Sélectionner le titre final</strong><span>Intègre le mot-clé principal + crée la curiosité ou promet un bénéfice clair.</span></div></div>
+    </div>
+  </div>
+  <div class="checklist-block">
+    <div class="cb-header" onclick="toggleBlock('cb-publication')">
+      <div class="cb-title-row"><div class="cb-icon" style="background:rgba(96,208,200,0.1);">🚀</div><span class="cb-title" style="color:var(--accent3)">Publication &amp; optimisation</span></div>
+      <span class="cb-badge" id="badge-cb-publication">0/5</span>
+    </div>
+    <div class="cb-body collapsed" id="cb-publication">
+      <div class="check-item"><input type="checkbox" id="m10"><div class="check-label"><strong>Rédiger la description (300+ mots)</strong><span>Résumé du contenu + mots-clés naturels + liens (Hairdex, lead magnet, VIP) + réseaux.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="m11"><div class="check-label"><strong>Ajouter 8-10 tags pertinents</strong><span>Mélange de tags généraux et de tags niche spécifiques.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="m12"><div class="check-label"><strong>Ajouter cartes et écrans de fin</strong><span>Pointer vers une autre vidéo pertinente + bouton d'abonnement.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="m13"><div class="check-label"><strong>Épingler commentaire avec lien Hairdex (si vidéo sponsorisée)</strong><span>Format : "📌 [Lien Hairdex] — Pour aller plus loin que cette vidéo."</span></div></div>
+      <div class="check-item"><input type="checkbox" id="m14"><div class="check-label"><strong>Programmer les shorts (2-3 sur la semaine)</strong><span>Espacement : 1 short tous les 2 jours. Pas le même jour que la vidéo longue.</span></div></div>
+    </div>
+  </div>
+  <div class="checklist-block">
+    <div class="cb-header" onclick="toggleBlock('cb-montage-shorts')">
+      <div class="cb-title-row"><div class="cb-icon" style="background:rgba(192,96,240,0.1);">⚡</div><span class="cb-title" style="color:var(--purple)">Montage shorts</span></div>
+      <span class="cb-badge" id="badge-cb-montage-shorts">0/3</span>
+    </div>
+    <div class="cb-body collapsed" id="cb-montage-shorts">
+      <div class="check-item"><input type="checkbox" id="m15"><div class="check-label"><strong>Montage rapide des 3 shorts (&lt;20 min total)</strong><span>Coupes serrées, sous-titres automatiques + correction, musique tendance optionnelle.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="m16"><div class="check-label"><strong>Vérifier le format vertical 9:16 et la qualité du son</strong><span>Les shorts sont souvent vus sans son sur mobile — les sous-titres sont critiques.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="m17"><div class="check-label"><strong>Rédiger les titres courts et accrocheurs pour les 3 shorts</strong><span>&lt; 60 caractères. Utiliser des emojis pertinents si cohérent avec ta marque.</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- EMAIL & COMMUNAUTÉ -->
+<div class="page" id="page-email">
+  <div class="page-header">
+    <div class="page-eyebrow">Jeudi — Bloc 8</div>
+    <div class="page-title">Email &amp; communauté VIP</div>
+    <div class="page-desc">Nourrir ta liste mail et animer ta communauté. C'est ici que la conversion se construit.</div>
+  </div>
+  <div class="protocol-progress">
+    <span class="pp-title">Progression</span>
+    <div class="pp-bar-wrap"><div class="pp-bar" id="prog-email" style="width:0%"></div></div>
+    <span class="pp-label" id="prog-email-label">0%</span>
+  </div>
+  <div class="checklist-block">
+    <div class="cb-header" onclick="toggleBlock('cb-mail-hebdo')">
+      <div class="cb-title-row"><div class="cb-icon" style="background:rgba(200,240,96,0.1);">📧</div><span class="cb-title" style="color:var(--accent)">Mail hebdomadaire</span></div>
+      <span class="cb-badge" id="badge-cb-mail-hebdo">0/5</span>
+    </div>
+    <div class="cb-body" id="cb-mail-hebdo">
+      <div class="check-item"><input type="checkbox" id="e1"><div class="check-label"><strong>Rédiger l'objet du mail (3 versions)</strong><span>L'objet = 80% du taux d'ouverture. Tester curiosité / bénéfice direct / question.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="e2"><div class="check-label"><strong>Corps : 80% valeur — contenu non dispo sur la chaîne</strong><span>Tip exclusif, insight, anecdote personnelle. Le lecteur doit sentir que la liste mail vaut quelque chose.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="e3"><div class="check-label"><strong>Corps : 20% CTA doux vers le VIP</strong><span>Ex : "Si tu veux aller plus loin, c'est par ici [lien]". Naturel, pas agressif.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="e4"><div class="check-label"><strong>Vérifier les liens (lead magnet, page VIP, vidéo semaine)</strong><span>Tester chaque lien avant l'envoi.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="e5"><div class="check-label"><strong>Envoyer / programmer l'envoi</strong><span>Horaire optimal : mardi ou jeudi entre 9h et 11h.</span></div></div>
+      <textarea class="note-field" placeholder="Objet retenu + résumé du contenu du mail…"></textarea>
+    </div>
+  </div>
+  <div class="checklist-block">
+    <div class="cb-header" onclick="toggleBlock('cb-vip-anim')">
+      <div class="cb-title-row"><div class="cb-icon" style="background:rgba(96,208,200,0.1);">🏛️</div><span class="cb-title" style="color:var(--accent3)">Animation communauté VIP</span></div>
+      <span class="cb-badge" id="badge-cb-vip-anim">0/4</span>
+    </div>
+    <div class="cb-body collapsed" id="cb-vip-anim">
+      <div class="check-item"><input type="checkbox" id="e6"><div class="check-label"><strong>Répondre à tous les messages / questions en attente</strong><span>L'accès direct à l'expert est la principale valeur perçue du VIP.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="e7"><div class="check-label"><strong>Publier un post d'engagement</strong><span>Question ouverte, sondage, challenge de la semaine. Maintenir l'activité du groupe.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="e8"><div class="check-label"><strong>Partager un contenu exclusif court</strong><span>Mini-conseil, coulisses, document non dispo sur la chaîne. Renforcer la valeur perçue.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="e9"><div class="check-label"><strong>Vérifier si des membres sont candidats au coaching</strong><span>Identifier les membres très engagés, progresser dans la relation avant de proposer.</span></div></div>
+    </div>
+  </div>
+  <div class="checklist-block">
+    <div class="cb-header" onclick="toggleBlock('cb-tunnel-check')">
+      <div class="cb-title-row"><div class="cb-icon" style="background:rgba(240,192,64,0.1);">🔄</div><span class="cb-title" style="color:var(--accent2)">Tunnel d'acquisition</span></div>
+      <span class="cb-badge" id="badge-cb-tunnel-check">0/3</span>
+    </div>
+    <div class="cb-body collapsed" id="cb-tunnel-check">
+      <div class="check-item"><input type="checkbox" id="e10"><div class="check-label"><strong>Vérifier que la séquence de bienvenue tourne correctement</strong><span>Un nouveau lead reçoit bien le mail J0 avec le lead magnet dans les 5 minutes.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="e11"><div class="check-label"><strong>Identifier les leads qui sont à J6-J8 dans la séquence</strong><span>Ce sont les leads "chauds" — potentiellement en train de décider pour le VIP.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="e12"><div class="check-label"><strong>Vérifier les stats de la séquence (taux d'ouverture / clics)</strong><span>Si un mail a un taux d'ouverture &lt; 25%, son objet mérite d'être retravaillé.</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ANALYSE -->
+<div class="page" id="page-analyse">
+  <div class="page-header">
+    <div class="page-eyebrow">Vendredi — Blocs 9 &amp; 10</div>
+    <div class="page-title">Analyse &amp; optimisation</div>
+    <div class="page-desc">Comprendre ce qui a marché, corriger ce qui n'a pas marché, préparer la semaine suivante.</div>
+  </div>
+  <div class="protocol-progress">
+    <span class="pp-title">Progression</span>
+    <div class="pp-bar-wrap"><div class="pp-bar" id="prog-analyse" style="width:0%"></div></div>
+    <span class="pp-label" id="prog-analyse-label">0%</span>
+  </div>
+  <div class="checklist-block">
+    <div class="cb-header" onclick="toggleBlock('cb-analytics')">
+      <div class="cb-title-row"><div class="cb-icon" style="background:rgba(200,240,96,0.1);">📊</div><span class="cb-title" style="color:var(--accent)">Analytics YouTube</span></div>
+      <span class="cb-badge" id="badge-cb-analytics">0/5</span>
+    </div>
+    <div class="cb-body" id="cb-analytics">
+      <div class="check-item"><input type="checkbox" id="a1"><div class="check-label"><strong>Vérifier le CTR de la miniature</strong><span>Objectif : &gt; 5%. Si &lt; 3%, tester une nouvelle miniature sur la vidéo.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="a2"><div class="check-label"><strong>Vérifier la rétention moyenne</strong><span>Objectif : &gt; 40% sur une vidéo de 10 min. Identifier où les gens décrochent.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="a3"><div class="check-label"><strong>Comparer les performances des shorts</strong><span>Lequel a généré le plus de vues ? de clics sur la chaîne ? d'abonnements ?</span></div></div>
+      <div class="check-item"><input type="checkbox" id="a4"><div class="check-label"><strong>Identifier la source de trafic principale cette semaine</strong><span>Recherche YouTube, suggestions, shorts, externe ? Orienter l'effort selon la source.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="a5"><div class="check-label"><strong>Documenter les insights dans la page Stats</strong><span>Renseigner les chiffres clés dans l'onglet "Stats de la semaine".</span></div></div>
+    </div>
+  </div>
+  <div class="checklist-block">
+    <div class="cb-header" onclick="toggleBlock('cb-optim')">
+      <div class="cb-title-row"><div class="cb-icon" style="background:rgba(96,208,200,0.1);">⚙️</div><span class="cb-title" style="color:var(--accent3)">Optimisations système</span></div>
+      <span class="cb-badge" id="badge-cb-optim">0/4</span>
+    </div>
+    <div class="cb-body collapsed" id="cb-optim">
+      <div class="check-item"><input type="checkbox" id="a6"><div class="check-label"><strong>Vérifier le taux d'ouverture du mail hebdo</strong><span>Objectif : &gt; 30%. Si inférieur, tester un objet plus court ou plus direct.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="a7"><div class="check-label"><strong>Calculer le taux de conversion tunnel cette semaine</strong><span>Nouveaux leads / vues totales. Objectif : 3-5%. Consigner dans les stats.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="a8"><div class="check-label"><strong>Identifier 1 point à améliorer pour la semaine prochaine</strong><span>Concret et actionnable : pas "faire mieux" mais "changer le CTA à 6 min".</span></div></div>
+      <div class="check-item"><input type="checkbox" id="a9"><div class="check-label"><strong>Planifier les sujets et slots de publication S+1</strong><span>Pré-remplir l'agenda pour lundi. La semaine commence par l'exécution, pas la réflexion.</span></div></div>
+    </div>
+  </div>
+  <div class="checklist-block">
+    <div class="cb-header" onclick="toggleBlock('cb-prospection')">
+      <div class="cb-title-row"><div class="cb-icon" style="background:rgba(192,96,240,0.1);">🤝</div><span class="cb-title" style="color:var(--purple)">Prospection sponsors</span></div>
+      <span class="cb-badge" id="badge-cb-prospection">0/3</span>
+    </div>
+    <div class="cb-body collapsed" id="cb-prospection">
+      <div class="check-item"><input type="checkbox" id="a10"><div class="check-label"><strong>Envoyer 2-3 approches à des sponsors potentiels</strong><span>Marques dans : compléments alimentaires, soins capillaires masculins, wellness, sport, santé sexuelle.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="a11"><div class="check-label"><strong>Faire un suivi des approches en cours</strong><span>Relancer après 7 jours sans réponse. La plupart des deals se font au 2e ou 3e contact.</span></div></div>
+      <div class="check-item"><input type="checkbox" id="a12"><div class="check-label"><strong>Mettre à jour le media kit si nécessaire</strong><span>Stats actualisées, captures d'écran analytics récentes. Un media kit à jour = deals plus faciles.</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- RESSOURCES -->
+<div class="page" id="page-ressources">
+  <div class="page-header">
+    <div class="page-eyebrow">Système permanent</div>
+    <div class="page-title">Ressources à créer</div>
+    <div class="page-desc">Les actifs qui font tourner ton tunnel à l'infini. Coche-les au fur et à mesure que tu les construis.</div>
+  </div>
+  <div class="section-label">Mois 1 — Priorité absolue</div>
+  <div class="resource-item" id="res-1">
+    <div class="ri-check" id="rc-1" onclick="toggleResource('res-1','rc-1')"></div>
+    <div class="ri-body">
+      <div class="ri-title">Lead magnet #1 — Diagnostic capillaire PDF</div>
+      <div class="ri-desc">"Le diagnostic capillaire en 5 minutes" — checklist + PDF. Cible le trafic froid. Doit être téléchargeable automatiquement après opt-in email. Format : 2-4 pages, visuel, actionnable.</div>
+      <span class="ri-tag urgent">🔥 Mois 1</span>
+    </div>
+  </div>
+  <div class="resource-item" id="res-2">
+    <div class="ri-check" id="rc-2" onclick="toggleResource('res-2','rc-2')"></div>
+    <div class="ri-body">
+      <div class="ri-title">Lead magnet #2 — Routine hebdo muscle + cheveux</div>
+      <div class="ri-desc">"Ma routine complète semaine" — plan d'entraînement + conseils capillaires intégrés. Cible les abonnés chauds. PDF ou template Notion.</div>
+      <span class="ri-tag urgent">🔥 Mois 1</span>
+    </div>
+  </div>
+  <div class="resource-item" id="res-3">
+    <div class="ri-check" id="rc-3" onclick="toggleResource('res-3','rc-3')"></div>
+    <div class="ri-body">
+      <div class="ri-title">Séquence email 7 mails (automatisée)</div>
+      <div class="ri-desc">J0 livraison LM + histoire — J2 problème — J4 preuve sociale — J6 valeur exclusive — J8 objections — J11 offre VIP — J14 dernier rappel. Sur Mailchimp ou Kit (ex ConvertKit).</div>
+      <span class="ri-tag urgent">🔥 Mois 1</span>
+    </div>
+  </div>
+  <div class="resource-item" id="res-4">
+    <div class="ri-check" id="rc-4" onclick="toggleResource('res-4','rc-4')"></div>
+    <div class="ri-body">
+      <div class="ri-title">Vidéo de présentation Muscle Café VIP (3-5 min)</div>
+      <div class="ri-desc">Pour qui / pourquoi / qu'est-ce qui t'attend / résultats attendus. Hébergée sur la page de vente. Déterminante pour la conversion. Format talking head, script travaillé.</div>
+      <span class="ri-tag urgent">🔥 Mois 1</span>
+    </div>
+  </div>
+  <div class="resource-item" id="res-5">
+    <div class="ri-check" id="rc-5" onclick="toggleResource('res-5','rc-5')"></div>
+    <div class="ri-body">
+      <div class="ri-title">Page de vente Muscle Café VIP</div>
+      <div class="ri-desc">Structure : Douleur → Solution → Ce que tu obtiens → Preuve sociale → Prix → FAQ → Bouton. Simple, directe, mobile-first. Intégrée à l'outil communauté (Skool, Circle, etc.).</div>
+      <span class="ri-tag urgent">🔥 Mois 1</span>
+    </div>
+  </div>
+  <div class="section-label">Mois 1-2 — Infrastructure</div>
+  <div class="resource-item" id="res-6">
+    <div class="ri-check" id="rc-6" onclick="toggleResource('res-6','rc-6')"></div>
+    <div class="ri-body">
+      <div class="ri-title">3 templates miniatures (Canva/Figma)</div>
+      <div class="ri-desc">3 variantes visuelles cohérentes avec ta marque. Permettent de créer chaque miniature en 10 min. Tester A/B sur les 2-3 premières semaines.</div>
+      <span class="ri-tag important">📐 Mois 1-2</span>
+    </div>
+  </div>
+  <div class="resource-item" id="res-7">
+    <div class="ri-check" id="rc-7" onclick="toggleResource('res-7','rc-7')"></div>
+    <div class="ri-body">
+      <div class="ri-title">Script CTA universel (30 sec)</div>
+      <div class="ri-desc">Version mid-vidéo (lead magnet) + version fin de vidéo (abonnement + VIP). À personnaliser légèrement selon le sujet de chaque vidéo. Mémorisé ou prompteur.</div>
+      <span class="ri-tag important">📐 Mois 1-2</span>
+    </div>
+  </div>
+  <div class="resource-item" id="res-8">
+    <div class="ri-check" id="rc-8" onclick="toggleResource('res-8','rc-8')"></div>
+    <div class="ri-body">
+      <div class="ri-title">Media kit sponsors</div>
+      <div class="ri-desc">Stats chaîne actualisées, démographie audience, exemples de vidéos sponsorisées, taux de conversion Hairdex (18,75% = argument de vente fort), tarifs.</div>
+      <span class="ri-tag important">📐 Mois 2</span>
+    </div>
+  </div>
+  <div class="resource-item" id="res-9">
+    <div class="ri-check" id="rc-9" onclick="toggleResource('res-9','rc-9')"></div>
+    <div class="ri-body">
+      <div class="ri-title">Checklist de bienvenue membres VIP</div>
+      <div class="ri-desc">"Par où commencer" — les 3 premières choses à faire dans la communauté. Réduit le churn des premiers jours et oriente les nouveaux membres.</div>
+      <span class="ri-tag important">📐 Mois 2</span>
+    </div>
+  </div>
+  <div class="section-label">Développement de la communauté — Cours à venir</div>
+  <div class="resource-item" id="res-10">
+    <div class="ri-check" id="rc-10" onclick="toggleResource('res-10','rc-10')"></div>
+    <div class="ri-body">
+      <div class="ri-title">Cours : Santé sexuelle masculine</div>
+      <div class="ri-desc">Nouvelle section VIP. Sujets : fonction érectile, libido, fertilité, compléments, hygiène de vie. Structurer en modules. Permet d'augmenter le prix de l'abonnement ou de créer un accès premium.</div>
+      <span class="ri-tag bonus">✦ Expansion</span>
+    </div>
+  </div>
+  <div class="resource-item" id="res-11">
+    <div class="ri-check" id="rc-11" onclick="toggleResource('res-11','rc-11')"></div>
+    <div class="ri-body">
+      <div class="ri-title">Cours : Santé mentale masculine</div>
+      <div class="ri-desc">Comment fonctionnent les hommes mentalement — gestion des émotions, performance, confiance, identité. Angle scientifique + pratique. Fort potentiel d'identification.</div>
+      <span class="ri-tag bonus">✦ Expansion</span>
+    </div>
+  </div>
+  <div class="resource-item" id="res-12">
+    <div class="ri-check" id="rc-12" onclick="toggleResource('res-12','rc-12')"></div>
+    <div class="ri-body">
+      <div class="ri-title">Section : Analyses de produits (Base de données)</div>
+      <div class="ri-desc">Cosmétiques cheveux, boosters testo, compléments érection / santé reproductive, optimisateurs masculins. Format fiche : composition → efficacité prouvée → verdict → alternatives. Exclusif VIP = valeur perçue élevée.</div>
+      <span class="ri-tag bonus">✦ Expansion</span>
+    </div>
+  </div>
+</div>
+
+<!-- COMMUNAUTÉ VIP -->
+<div class="page" id="page-communaute">
+  <div class="page-header">
+    <div class="page-eyebrow">Contenu &amp; progression</div>
+    <div class="page-title">Muscle Café VIP</div>
+    <div class="page-desc">Suivi de l'avancement des cours et du contenu exclusif de ta communauté privée.</div>
+  </div>
+  <div class="course-card">
+    <div class="course-header">
+      <div class="course-icon" style="background:rgba(200,240,96,0.1);font-size:20px;">💈</div>
+      <div class="course-meta">
+        <div class="course-name">Cours Calvitie</div>
+        <div class="course-status" style="color:var(--accent)">● En ligne — cours actif</div>
+      </div>
+    </div>
+    <div class="course-body">
+      <div class="course-task"><input type="checkbox" id="cc1"><label for="cc1">Vérifier que tous les modules sont accessibles et fonctionnels</label></div>
+      <div class="course-task"><input type="checkbox" id="cc2"><label for="cc2">Mettre à jour avec les dernières études / recommandations</label></div>
+      <div class="course-task"><input type="checkbox" id="cc3"><label for="cc3">Ajouter 1 module ou ressource bonus ce mois-ci</label></div>
+      <div class="course-task"><input type="checkbox" id="cc4"><label for="cc4">Recueillir les retours membres sur le cours</label></div>
+    </div>
+  </div>
+  <div class="course-card">
+    <div class="course-header">
+      <div class="course-icon" style="background:rgba(192,96,240,0.1);font-size:20px;">💜</div>
+      <div class="course-meta">
+        <div class="course-name">Cours Santé sexuelle masculine</div>
+        <div class="course-status" style="color:var(--purple)">○ En développement</div>
+      </div>
+    </div>
+    <div class="course-body">
+      <div class="course-task"><input type="checkbox" id="cs1"><label for="cs1">Définir le plan de cours (modules, durée, format)</label></div>
+      <div class="course-task"><input type="checkbox" id="cs2"><label for="cs2">Rechercher les sources scientifiques clés</label></div>
+      <div class="course-task"><input type="checkbox" id="cs3"><label for="cs3">Tourner le module 1 (introduction + anatomie fonctionnelle)</label></div>
+      <div class="course-task"><input type="checkbox" id="cs4"><label for="cs4">Tourner le module 2 (nutrition & hormones)</label></div>
+      <div class="course-task"><input type="checkbox" id="cs5"><label for="cs5">Tourner le module 3 (compléments — ce qui marche vraiment)</label></div>
+      <div class="course-task"><input type="checkbox" id="cs6"><label for="cs6">Tourner le module 4 (hygiène de vie & performance)</label></div>
+      <div class="course-task"><input type="checkbox" id="cs7"><label for="cs7">Monter et uploader tous les modules</label></div>
+      <div class="course-task"><input type="checkbox" id="cs8"><label for="cs8">Annoncer le lancement à la communauté</label></div>
+    </div>
+  </div>
+  <div class="course-card">
+    <div class="course-header">
+      <div class="course-icon" style="background:rgba(96,208,200,0.1);font-size:20px;">🧠</div>
+      <div class="course-meta">
+        <div class="course-name">Cours Santé mentale masculine</div>
+        <div class="course-status" style="color:var(--accent3)">○ En développement</div>
+      </div>
+    </div>
+    <div class="course-body">
+      <div class="course-task"><input type="checkbox" id="cm1"><label for="cm1">Définir le plan de cours et l'angle différenciant</label></div>
+      <div class="course-task"><input type="checkbox" id="cm2"><label for="cm2">Module 1 : comment fonctionnent les émotions chez l'homme</label></div>
+      <div class="course-task"><input type="checkbox" id="cm3"><label for="cm3">Module 2 : gestion du stress et de la pression de performance</label></div>
+      <div class="course-task"><input type="checkbox" id="cm4"><label for="cm4">Module 3 : confiance, identité masculine, relations</label></div>
+      <div class="course-task"><input type="checkbox" id="cm5"><label for="cm5">Module 4 : outils pratiques (exercices, routines mentales)</label></div>
+      <div class="course-task"><input type="checkbox" id="cm6"><label for="cm6">Monter et uploader</label></div>
+    </div>
+  </div>
+  <div class="course-card">
+    <div class="course-header">
+      <div class="course-icon" style="background:rgba(240,192,64,0.1);font-size:20px;">🔬</div>
+      <div class="course-meta">
+        <div class="course-name">Analyses de produits (base de données VIP)</div>
+        <div class="course-status" style="color:var(--accent2)">○ À lancer</div>
+      </div>
+    </div>
+    <div class="course-body">
+      <div class="course-task"><input type="checkbox" id="cp1"><label for="cp1">Créer le template fiche analyse (composition / efficacité / verdict)</label></div>
+      <div class="course-task"><input type="checkbox" id="cp2"><label for="cp2">Publier la 1ère analyse — cosmétiques cheveux populaires</label></div>
+      <div class="course-task"><input type="checkbox" id="cp3"><label for="cp3">Publier la 2ème analyse — boosters de testostérone en vente libre</label></div>
+      <div class="course-task"><input type="checkbox" id="cp4"><label for="cp4">Publier la 3ème analyse — compléments santé sexuelle / reproductive</label></div>
+      <div class="course-task"><input type="checkbox" id="cp5"><label for="cp5">Créer un index consultable des produits analysés</label></div>
+      <div class="course-task"><input type="checkbox" id="cp6"><label for="cp6">Établir un rythme de publication (1 analyse / 2 semaines min.)</label></div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="page" id="page-stats">
+  <div class="page-header">
+    <div class="page-eyebrow">Vendredi — Saisie hebdomadaire</div>
+    <div class="page-title">Stats de la semaine</div>
+    <div class="page-desc">Renseigne ces valeurs chaque vendredi. Elles alimentent le dashboard et l'historique.</div>
+  </div>
+  <div class="stat-section-title">Audience &amp; portée</div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="sc-label">Vues totales semaine</div><input type="number" id="st-views" placeholder="0"><div class="sc-sub">YouTube — vidéos longues + shorts</div></div>
+    <div class="stat-card"><div class="sc-label">Abonnés total</div><input type="number" id="st-subs" placeholder="1532"><div class="sc-sub">Total cumulé chaîne</div></div>
+    <div class="stat-card"><div class="sc-label">Nouveaux abonnés</div><input type="number" id="st-new-subs" placeholder="0"><div class="sc-sub">Gains semaine</div></div>
+    <div class="stat-card"><div class="sc-label">Impressions miniature</div><input type="number" id="st-impressions" placeholder="0"><div class="sc-sub">YouTube Studio</div></div>
+  </div>
+  <div class="stat-section-title">Engagement &amp; rétention</div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="sc-label">CTR miniature (%)</div><input type="number" id="st-ctr" placeholder="0.0" step="0.1"><div class="sc-sub">Objectif : &gt; 5%</div></div>
+    <div class="stat-card"><div class="sc-label">Rétention moyenne (%)</div><input type="number" id="st-retention" placeholder="0"><div class="sc-sub">Objectif : &gt; 40%</div></div>
+    <div class="stat-card"><div class="sc-label">Likes / vidéo</div><input type="number" id="st-likes" placeholder="0"><div class="sc-sub">Vidéo principale</div></div>
+    <div class="stat-card"><div class="sc-label">Commentaires</div><input type="number" id="st-comments" placeholder="0"><div class="sc-sub">Vidéo principale</div></div>
+  </div>
+  <div class="stat-section-title">Tunnel d'acquisition</div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="sc-label">Liste mail (total)</div><input type="number" id="st-mails" placeholder="138"><div class="sc-sub">Objectif S3 : 500</div></div>
+    <div class="stat-card"><div class="sc-label">Nouveaux leads semaine</div><input type="number" id="st-new-leads" placeholder="0"><div class="sc-sub">Opt-ins semaine</div></div>
+    <div class="stat-card"><div class="sc-label">Taux ouverture mail (%)</div><input type="number" id="st-open-rate" placeholder="0" step="0.1"><div class="sc-sub">Objectif : &gt; 30%</div></div>
+    <div class="stat-card"><div class="sc-label">Taux clic mail (%)</div><input type="number" id="st-click-rate" placeholder="0" step="0.1"><div class="sc-sub">Objectif : &gt; 3%</div></div>
+  </div>
+  <div class="stat-section-title">Communauté VIP</div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="sc-label">Abonnés VIP actifs</div><input type="number" id="st-vip" placeholder="0"><div class="sc-sub">Objectif S3 : 55</div></div>
+    <div class="stat-card"><div class="sc-label">Nouveaux membres VIP</div><input type="number" id="st-new-vip" placeholder="0"><div class="sc-sub">Semaine</div></div>
+    <div class="stat-card"><div class="sc-label">Churns VIP</div><input type="number" id="st-churn" placeholder="0"><div class="sc-sub">Résiliations semaine</div></div>
+    <div class="stat-card"><div class="sc-label">Engagements communauté</div><input type="number" id="st-engage" placeholder="0"><div class="sc-sub">Posts / réponses / réactions</div></div>
+  </div>
+  <div class="stat-section-title">Revenus</div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="sc-label">Revenu mensuel total (CHF)</div><input type="number" id="st-revenue" placeholder="300"><div class="sc-sub">Sponsoring + VIP + commissions</div></div>
+    <div class="stat-card"><div class="sc-label">Commissions Hairdex</div><input type="number" id="st-hairdex" placeholder="0"><div class="sc-sub">Nouvelles réservations semaine</div></div>
+    <div class="stat-card"><div class="sc-label">Revenus coaching (CHF)</div><input type="number" id="st-coaching" placeholder="0"><div class="sc-sub">Bonus — hors objectif base</div></div>
+    <div class="stat-card"><div class="sc-label">Vidéos publiées semaine</div><input type="number" id="st-videos" placeholder="0"><div class="sc-sub">Longues + shorts</div></div>
+  </div>
+  <div class="stat-section-title">Notes &amp; observations</div>
+  <textarea class="note-field" id="st-notes" style="min-height:100px;" placeholder="Ce qui a bien marché, ce qui mérite d'être amélioré, observations sur l'audience, idées..."></textarea>
+</div>
+
+<!-- HISTORIQUE -->
+<div class="page" id="page-historique">
+  <div class="page-header">
+    <div class="page-eyebrow">Performance globale</div>
+    <div class="page-title">Historique</div>
+    <div class="page-desc">Visualise ta régularité et l'évolution de tes indicateurs dans le temps.</div>
+  </div>
+  <div id="history-container">
+    <div style="color:var(--muted);font-size:13px;text-align:center;padding:60px 0;">Aucune semaine enregistrée pour l'instant.<br>Complete tes stats et sauvegarde pour voir l'historique ici.</div>
+  </div>
+</div>
+
+</main>
+
+<!-- SAVE BUTTON -->
+<button class="save-btn" id="save-btn" onclick="saveWeek()">Sauvegarder la semaine</button>
+<div class="save-notice" id="save-notice">✓ Sauvegardé</div>
+
+<script>
+// ---- STATE ----
+let currentWeekOffset = 0;
+let appData = {};
+
+function getWeekKey(offset) {
+  const d = new Date();
+  d.setDate(d.getDate() + offset * 7);
+  const onejan = new Date(d.getFullYear(), 0, 1);
+  const weekNum = Math.ceil((((d - onejan) / 86400000) + onejan.getDay() + 1) / 7);
+  return `week_${d.getFullYear()}_${weekNum}`;
+}
+
+function getWeekLabel(offset) {
+  const d = new Date();
+  d.setDate(d.getDate() + offset * 7);
+  const onejan = new Date(d.getFullYear(), 0, 1);
+  const weekNum = Math.ceil((((d - onejan) / 86400000) + onejan.getDay() + 1) / 7);
+  return `S${weekNum} — ${d.getFullYear()}`;
+}
+
+function loadData() {
+  try { appData = JSON.parse(localStorage.getItem('musclecafe_os') || '{}'); } catch(e) { appData = {}; }
+}
+
+function saveData() {
+  try { localStorage.setItem('musclecafe_os', JSON.stringify(appData)); } catch(e) {}
+}
+
+// ---- NAVIGATION ----
+document.querySelectorAll('.nav-item[data-page]').forEach(item => {
+  item.addEventListener('click', function() {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    this.classList.add('active');
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + this.dataset.page).classList.add('active');
+  });
+});
+
+// ---- WEEK NAVIGATION ----
+document.getElementById('prev-week').addEventListener('click', () => { currentWeekOffset--; switchWeek(); });
+document.getElementById('next-week').addEventListener('click', () => { currentWeekOffset++; switchWeek(); });
+
+function switchWeek() {
+  saveCurrentWeekToMemory();
+  updateWeekDisplay();
+  loadWeekData();
+}
+
+function updateWeekDisplay() {
+  const label = getWeekLabel(currentWeekOffset);
+  document.getElementById('current-week-label').textContent = label;
+  document.getElementById('week-display').textContent = label;
+}
+
+// ---- BLOCK TOGGLE ----
+function toggleBlock(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('collapsed');
+}
+
+// ---- CHECKBOXES ----
+const protocolCheckboxes = {
+  'idees': ['i1','i2','i3','i4','i5','i6','i7','i8','i9','i10','i11','i12','i13','i14'],
+  'script': ['s1','s2','s3','s4','s5','s6','s7','s8','s9','s10'],
+  'tournage': ['t1','t2','t3','t4','t5','t6','t7','t8','t9','t10','t11'],
+  'montage': ['m1','m2','m3','m4','m5','m6','m7','m8','m9','m10','m11','m12','m13','m14','m15','m16','m17'],
+  'email': ['e1','e2','e3','e4','e5','e6','e7','e8','e9','e10','e11','e12'],
+  'analyse': ['a1','a2','a3','a4','a5','a6','a7','a8','a9','a10','a11','a12']
+};
+
+const blockMap = {
+  'cb-comments': ['i1','i2','i3','i4'],
+  'cb-seo': ['i5','i6','i7','i8'],
+  'cb-concurrents': ['i9','i10','i11'],
+  'cb-selection': ['i12','i13','i14'],
+  'cb-hook': ['s1','s2','s3'],
+  'cb-structure': ['s4','s5','s6','s7'],
+  'cb-shorts-script': ['s8','s9','s10'],
+  'cb-setup': ['t1','t2','t3','t4'],
+  'cb-tournage-long': ['t5','t6','t7','t8'],
+  'cb-tournage-shorts': ['t9','t10','t11'],
+  'cb-montage-long': ['m1','m2','m3','m4','m5'],
+  'cb-miniature': ['m6','m7','m8','m9'],
+  'cb-publication': ['m10','m11','m12','m13','m14'],
+  'cb-montage-shorts': ['m15','m16','m17'],
+  'cb-mail-hebdo': ['e1','e2','e3','e4','e5'],
+  'cb-vip-anim': ['e6','e7','e8','e9'],
+  'cb-tunnel-check': ['e10','e11','e12'],
+  'cb-analytics': ['a1','a2','a3','a4','a5'],
+  'cb-optim': ['a6','a7','a8','a9'],
+  'cb-prospection': ['a10','a11','a12']
+};
+
+function updateBlockBadge(blockId) {
+  const ids = blockMap[blockId];
+  if (!ids) return;
+  const total = ids.length;
+  const checked = ids.filter(id => document.getElementById(id)?.checked).length;
+  const badge = document.getElementById('badge-' + blockId);
+  if (badge) {
+    badge.textContent = `${checked}/${total}`;
+    badge.classList.toggle('done', checked === total);
+  }
+}
+
+function updateProtocolProgress(proto) {
+  const ids = protocolCheckboxes[proto];
+  if (!ids) return;
+  const total = ids.length;
+  const checked = ids.filter(id => document.getElementById(id)?.checked).length;
+  const pct = Math.round((checked / total) * 100);
+  const bar = document.getElementById('prog-' + proto);
+  const label = document.getElementById('prog-' + proto + '-label');
+  if (bar) bar.style.width = pct + '%';
+  if (label) label.textContent = pct + '%';
+}
+
+document.querySelectorAll('.check-item input[type=checkbox]').forEach(cb => {
+  cb.addEventListener('change', function() {
+    this.closest('.check-item').classList.toggle('checked', this.checked);
+    Object.keys(blockMap).forEach(bid => { if (blockMap[bid].includes(this.id)) updateBlockBadge(bid); });
+    Object.keys(protocolCheckboxes).forEach(proto => { if (protocolCheckboxes[proto].includes(this.id)) updateProtocolProgress(proto); });
+    updateDashboard();
+  });
+});
+
+// ---- RESOURCES ----
+function toggleResource(itemId, checkId) {
+  const item = document.getElementById(itemId);
+  const check = document.getElementById(checkId);
+  const done = !check.classList.contains('done');
+  check.classList.toggle('done', done);
+  item.style.opacity = done ? '0.5' : '1';
+  saveCurrentWeekToMemory();
+}
+
+// ---- SAVE / LOAD ----
+function collectCheckboxes() {
+  const state = {};
+  document.querySelectorAll('input[type=checkbox]').forEach(cb => {
+    if (cb.id) state[cb.id] = cb.checked;
+  });
+  return state;
+}
+
+function collectStats() {
+  const stats = {};
+  const fields = ['st-views','st-subs','st-new-subs','st-impressions','st-ctr','st-retention','st-likes','st-comments','st-mails','st-new-leads','st-open-rate','st-click-rate','st-vip','st-new-vip','st-churn','st-engage','st-revenue','st-hairdex','st-coaching','st-videos','st-notes'];
+  fields.forEach(f => {
+    const el = document.getElementById(f);
+    if (el) stats[f] = el.value;
+  });
+  return stats;
+}
+
+function collectResources() {
+  const res = {};
+  for (let i = 1; i <= 12; i++) {
+    const check = document.getElementById('rc-' + i);
+    if (check) res['rc-' + i] = check.classList.contains('done');
+  }
+  return res;
+}
+
+function collectCommunity() {
+  const comm = {};
+  ['cc1','cc2','cc3','cc4','cs1','cs2','cs3','cs4','cs5','cs6','cs7','cs8','cm1','cm2','cm3','cm4','cm5','cm6','cp1','cp2','cp3','cp4','cp5','cp6'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) comm[id] = el.checked;
+  });
+  return comm;
+}
+
+function collectNotes() {
+  const notes = {};
+  document.querySelectorAll('.note-field').forEach((el, i) => {
+    notes['note_' + i] = el.value;
+  });
+  return notes;
+}
+
+function saveCurrentWeekToMemory() {
+  const key = getWeekKey(currentWeekOffset);
+  const weekLabel = getWeekLabel(currentWeekOffset);
+  appData[key] = {
+    label: weekLabel,
+    checkboxes: collectCheckboxes(),
+    stats: collectStats(),
+    resources: collectResources(),
+    community: collectCommunity(),
+    notes: collectNotes(),
+    savedAt: new Date().toISOString()
+  };
+}
+
+function saveWeek() {
+  saveCurrentWeekToMemory();
+  saveData();
+  updateDashboard();
+  renderHistory();
+  const notice = document.getElementById('save-notice');
+  const btn = document.getElementById('save-btn');
+  btn.style.display = 'none';
+  notice.style.opacity = '1';
+  setTimeout(() => { notice.style.opacity = '0'; btn.style.display = ''; }, 2200);
+}
+
+function loadWeekData() {
+  const key = getWeekKey(currentWeekOffset);
+  const wk = appData[key] || {};
+  // checkboxes
+  if (wk.checkboxes) {
+    document.querySelectorAll('input[type=checkbox]').forEach(cb => {
+      if (cb.id && wk.checkboxes[cb.id] !== undefined) {
+        cb.checked = wk.checkboxes[cb.id];
+        cb.closest('.check-item')?.classList.toggle('checked', cb.checked);
+      }
+    });
+  } else {
+    document.querySelectorAll('.check-item input[type=checkbox]').forEach(cb => { cb.checked = false; cb.closest('.check-item')?.classList.remove('checked'); });
+  }
+  // stats
+  const stats = wk.stats || {};
+  ['st-views','st-subs','st-new-subs','st-impressions','st-ctr','st-retention','st-likes','st-comments','st-mails','st-new-leads','st-open-rate','st-click-rate','st-vip','st-new-vip','st-churn','st-engage','st-revenue','st-hairdex','st-coaching','st-videos','st-notes'].forEach(f => {
+    const el = document.getElementById(f);
+    if (el) el.value = stats[f] || '';
+  });
+  // resources
+  if (wk.resources) {
+    for (let i = 1; i <= 12; i++) {
+      const check = document.getElementById('rc-' + i);
+      const item = document.getElementById('res-' + i);
+      if (check && item) {
+        const done = wk.resources['rc-' + i] || false;
+        check.classList.toggle('done', done);
+        item.style.opacity = done ? '0.5' : '1';
+      }
+    }
+  }
+  // community
+  if (wk.community) {
+    ['cc1','cc2','cc3','cc4','cs1','cs2','cs3','cs4','cs5','cs6','cs7','cs8','cm1','cm2','cm3','cm4','cm5','cm6','cp1','cp2','cp3','cp4','cp5','cp6'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && wk.community[id] !== undefined) el.checked = wk.community[id];
+    });
+  }
+  // notes
+  if (wk.notes) {
+    document.querySelectorAll('.note-field').forEach((el, i) => {
+      el.value = wk.notes['note_' + i] || '';
+    });
+  }
+  // update all progress bars and badges
+  Object.keys(blockMap).forEach(bid => updateBlockBadge(bid));
+  Object.keys(protocolCheckboxes).forEach(proto => updateProtocolProgress(proto));
+  updateDashboard();
+}
+
+// ---- DASHBOARD ----
+function getProtocolCompletion(proto, weekData) {
+  if (!weekData || !weekData.checkboxes) return 0;
+  const ids = protocolCheckboxes[proto];
+  const checked = ids.filter(id => weekData.checkboxes[id]).length;
+  return Math.round((checked / ids.length) * 100);
+}
+
+function updateDashboard() {
+  const key = getWeekKey(currentWeekOffset);
+  const wk = appData[key] || {};
+  const protos = ['idees','script','tournage','montage','email','analyse'];
+  const labels = ['Idées','Script','Tournage','Montage','Email','Analyse'];
+  const colors = ['var(--accent)','var(--accent3)','var(--accent2)','var(--accent)','var(--accent3)','var(--purple)'];
+  let completedCount = 0;
+  const barsEl = document.getElementById('dash-protocol-bars');
+  if (barsEl) {
+    barsEl.innerHTML = '';
+    protos.forEach((p, i) => {
+      const pct = getProtocolCompletion(p, wk);
+      if (pct === 100) completedCount++;
+      const row = document.createElement('div');
+      row.className = 'pc-row';
+      row.innerHTML = `<span class="pc-label">${labels[i]}</span><div class="pc-bar-wrap"><div class="pc-fill" style="width:${pct}%;background:${colors[i]};"></div></div><span class="pc-pct" style="color:${colors[i]}">${pct}%</span>`;
+      barsEl.appendChild(row);
+    });
+  }
+  document.getElementById('dash-protocols').textContent = completedCount + '/6';
+
+  // stats
+  const stats = wk.stats || {};
+  const revenue = parseInt(stats['st-revenue']) || 0;
+  const vip = parseInt(stats['st-vip']) || 0;
+  const views = parseInt(stats['st-views']) || 0;
+  const mails = parseInt(stats['st-mails']) || 0;
+  const newLeads = parseInt(stats['st-new-leads']) || 0;
+
+  if (revenue) document.getElementById('dash-revenue').textContent = revenue.toLocaleString();
+  if (vip) {
+    document.getElementById('dash-vip').textContent = vip;
+    document.getElementById('dash-vip-bar').style.width = Math.min(100, Math.round(vip/55*100)) + '%';
+  }
+  if (views) {
+    document.getElementById('dash-views').textContent = views.toLocaleString();
+    document.getElementById('dash-views-bar').style.width = Math.min(100, Math.round(views/25000*100)) + '%';
+  }
+  if (mails) {
+    document.getElementById('dash-mails').textContent = mails.toLocaleString();
+    document.getElementById('dash-mails-bar').style.width = Math.min(100, Math.round(mails/500*100)) + '%';
+  }
+
+  // tunnel
+  const subs = parseInt(stats['st-subs']) || 0;
+  const tc1 = views && subs ? ((subs / views * 100)).toFixed(1) + '%' : '—%';
+  const tc2 = views && newLeads ? ((newLeads / views * 100)).toFixed(1) + '%' : '—%';
+  const tc3 = mails && vip ? ((vip / mails * 100)).toFixed(1) + '%' : '—%';
+  document.getElementById('tc1').textContent = tc1;
+  document.getElementById('tc2').textContent = tc2;
+  document.getElementById('tc3').textContent = tc3;
+  document.getElementById('tc1-bar').style.width = Math.min(100, parseFloat(tc1) || 0) + '%';
+  document.getElementById('tc2-bar').style.width = Math.min(100, (parseFloat(tc2) || 0) * 10) + '%';
+  document.getElementById('tc3-bar').style.width = Math.min(100, parseFloat(tc3) || 0) + '%';
+
+  // consistency mini bars
+  renderConsistencyBars();
+}
+
+function renderConsistencyBars() {
+  const container = document.getElementById('dash-consistency');
+  if (!container) return;
+  container.innerHTML = '';
+  for (let i = -7; i <= 0; i++) {
+    const key = getWeekKey(i);
+    const wk = appData[key] || {};
+    const protos = ['idees','script','tournage','montage','email','analyse'];
+    const avgPct = protos.reduce((sum, p) => sum + getProtocolCompletion(p, wk), 0) / protos.length;
+    const h = Math.max(4, Math.round(avgPct * 0.56));
+    const cls = avgPct >= 80 ? 'done' : avgPct >= 40 ? 'partial' : '';
+    const bar = document.createElement('div');
+    bar.style.cssText = `flex:1;height:${h}px;border-radius:2px 2px 0 0;background:${cls === 'done' ? 'var(--accent)' : cls === 'partial' ? 'var(--accent2)' : 'var(--surface)'};`;
+    container.appendChild(bar);
+  }
+}
+
+// ---- HISTORY ----
+function renderHistory() {
+  const container = document.getElementById('history-container');
+  if (!container) return;
+  const weeks = Object.keys(appData).filter(k => k.startsWith('week_')).sort().reverse();
+  if (!weeks.length) {
+    container.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:60px 0;">Aucune semaine enregistrée pour l\'instant.</div>';
+    return;
+  }
+  container.innerHTML = '';
+  weeks.forEach(key => {
+    const wk = appData[key];
+    const protos = ['idees','script','tournage','montage','email','analyse'];
+    const avg = Math.round(protos.reduce((s, p) => s + getProtocolCompletion(p, wk), 0) / protos.length);
+    const stats = wk.stats || {};
+    const hw = document.createElement('div');
+    hw.className = 'history-week';
+    hw.innerHTML = `
+      <div class="hw-header" onclick="this.nextElementSibling.classList.toggle('open')">
+        <span class="hw-title">${wk.label || key}</span>
+        <span class="hw-score" style="color:${avg >= 80 ? 'var(--accent)' : avg >= 50 ? 'var(--accent2)' : 'var(--red)'}">Régularité ${avg}%</span>
+      </div>
+      <div class="hw-body">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;font-size:12px;font-family:var(--font-mono);">
+          <div><div style="color:var(--muted);margin-bottom:2px;">Vues</div><div style="color:var(--text)">${parseInt(stats['st-views']||0).toLocaleString()}</div></div>
+          <div><div style="color:var(--muted);margin-bottom:2px;">Liste mail</div><div style="color:var(--text)">${stats['st-mails']||'—'}</div></div>
+          <div><div style="color:var(--muted);margin-bottom:2px;">VIP</div><div style="color:var(--text)">${stats['st-vip']||'—'}</div></div>
+          <div><div style="color:var(--muted);margin-bottom:2px;">Revenu</div><div style="color:var(--text)">${stats['st-revenue']||'—'}.-</div></div>
+          <div><div style="color:var(--muted);margin-bottom:2px;">Abonnés</div><div style="color:var(--text)">${stats['st-subs']||'—'}</div></div>
+          <div><div style="color:var(--muted);margin-bottom:2px;">CTR</div><div style="color:var(--text)">${stats['st-ctr']||'—'}%</div></div>
+        </div>
+        ${stats['st-notes'] ? `<div style="margin-top:12px;font-size:12px;color:var(--muted);border-top:1px solid var(--border);padding-top:10px;line-height:1.6;">${stats['st-notes']}</div>` : ''}
+      </div>
+    `;
+    container.appendChild(hw);
+  });
+}
+
+// ---- INIT ----
+loadData();
+updateWeekDisplay();
+loadWeekData();
+renderHistory();
+</script>
+</body>
+</html>
